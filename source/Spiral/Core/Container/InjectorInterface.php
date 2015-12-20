@@ -13,6 +13,8 @@ use Spiral\Core\Exceptions\Container\ContainerException;
  * Magic spiral interface used to resolve dependencies based on their context. Container may
  * execute such method if INJECTOR constant found in requested class. Potentially changed to
  * lazy binding in spiral container.
+ *
+ * @todo possibly deprecated in order to be replaced with regular factories
  */
 interface InjectorInterface
 {
