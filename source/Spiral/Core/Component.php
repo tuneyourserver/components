@@ -8,7 +8,6 @@
 namespace Spiral\Core;
 
 use Interop\Container\ContainerInterface;
-use Spiral\Debug\Traits\LoggerTrait;
 
 /**
  * Basic spiral cell. Automatically detects if "container" property are presented in class or uses
@@ -16,6 +15,11 @@ use Spiral\Debug\Traits\LoggerTrait;
  */
 abstract class Component
 {
+    /**
+     * @var ContainerInterface
+     */
+    private $container = null;
+
     /**
      * Global/static mainly used to resolve singletons outside of the runtime scope.
      * Must be used as fallback only, or not used at all. All spiral components can
@@ -26,6 +30,26 @@ abstract class Component
     private static $staticContainer = null;
 
     /**
+     * Optional constructor.
+     *
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * Get/set instance of instance specific container.
+     *
+     * @param ContainerInterface $container Can be set to null.
+     */
+    protected function setContainer(ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Get instance of container associated with given object, uses global container as fallback
      * if not. Method generally used by traits.
      *
@@ -33,11 +57,7 @@ abstract class Component
      */
     protected function container()
     {
-        if (
-            property_exists($this, 'container')
-            && isset($this->container)
-            && $this->container instanceof ContainerInterface
-        ) {
+        if ($this->container instanceof ContainerInterface) {
             return $this->container;
         }
 

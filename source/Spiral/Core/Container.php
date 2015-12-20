@@ -98,25 +98,26 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
         }
 
         if (is_array($binding)) {
-            if (is_string($binding[0])) {
-                //Class name
-                $instance = $this->make($binding[0], $parameters, $context);
-            } elseif ($binding[0] instanceof \Closure) {
-                $reflection = new \ReflectionFunction($binding[0]);
+            if (is_string($binding[0])) { //Class name?
 
-                //Invoking Closure
+                $instance = $this->make($binding[0], $parameters, $context);
+
+            } elseif ($binding[0] instanceof \Closure) {
+
+                $reflection = new \ReflectionFunction($binding[0]);
                 $instance = $reflection->invokeArgs(
                     $this->resolveArguments($reflection, $parameters)
                 );
-            } elseif (is_array($binding[0])) {
-                //In a form of resolver and method
+
+            } elseif (is_array($binding[0])) { //In a form of [resolver, method]
+
                 list($resolver, $method) = $binding[0];
 
                 $method = new \ReflectionMethod($resolver = $this->get($resolver), $method);
-
                 $instance = $method->invokeArgs(
                     $resolver, $this->resolveArguments($method, $parameters)
                 );
+
             } else {
                 throw new ContainerException("Invalid binding.");
             }
@@ -126,7 +127,7 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
                 $this->bindings[$class] = $instance;
             }
 
-            return $instance;
+            return $this->registerInstance($instance, new \ReflectionObject($instance));
         }
 
         return null;
@@ -340,22 +341,7 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
         //OK, we can create class by ourselves
         $instance = $this->createInstance($class, $parameters, $context, $reflector);
 
-        /**
-         * Only for classes which are constructed using autowiring, SINGLETON logic can be rewritten
-         * or disabled using custom binding or factory.
-         *
-         * @var \ReflectionClass $reflector
-         */
-        if (
-            $instance instanceof SingletonInterface
-            && !empty($singleton = $reflector->getConstant('SINGLETON'))
-        ) {
-            //Component declared SINGLETON constant, binding as constant value and class name.
-            $this->bindings[$singleton] = $instance;
-        }
-
-        return $instance;
-
+        return $this->registerInstance($instance, $reflector);
     }
 
     /**
@@ -442,6 +428,31 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
         } else {
             //No constructor specified
             $instance = $reflection->newInstance();
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Make sure instance conditions are met
+     *
+     * @param object           $instance
+     * @param \ReflectionClass $reflector
+     * @return object
+     */
+    private function registerInstance($instance, \ReflectionClass $reflector)
+    {
+        if (
+            $instance instanceof SingletonInterface
+            && !empty($singleton = $reflector->getConstant('SINGLETON'))
+        ) {
+            if (!array_key_exists($singleton, $this->bindings)) {
+                $this->bindings[$singleton] = $instance;
+            }
+        }
+
+        if ($instance instanceof Component) {
+            $instance->setContainer($instance);
         }
 
         return $instance;
