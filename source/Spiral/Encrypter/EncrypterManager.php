@@ -9,6 +9,7 @@ namespace Spiral\Encrypter;
 
 use Spiral\Core\Container\InjectorInterface;
 use Spiral\Core\Container\SingletonInterface;
+use Spiral\Core\FactoryInterface;
 use Spiral\Encrypter\Configs\EncrypterConfig;
 
 /**
@@ -22,15 +23,22 @@ class EncrypterManager implements InjectorInterface, SingletonInterface
     const SINGLETON = self::class;
 
     /**
+     * @var FactoryInterface
+     */
+    protected $factory = null;
+
+    /**
      * @var EncrypterConfig
      */
     protected $config = null;
 
     /**
-     * @param EncrypterConfig $config
+     * @param EncrypterConfig  $config
+     * @param FactoryInterface $factory
      */
-    public function __construct(EncrypterConfig $config)
+    public function __construct(EncrypterConfig $config, FactoryInterface $factory)
     {
+        $this->factory = $factory;
         $this->config = $config;
     }
 
@@ -39,6 +47,9 @@ class EncrypterManager implements InjectorInterface, SingletonInterface
      */
     public function createInjection(\ReflectionClass $class, $context = null)
     {
-        return $class->newInstance($this->config->getKey(), $this->config->getCipher());
+        return $this->factory->make(EncrypterInterface::class, [
+            'key'    => $this->config->getKey(),
+            'cipher' => $this->config->getCipher()
+        ]);
     }
 }

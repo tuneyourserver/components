@@ -399,7 +399,7 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
             );
         }
 
-        //We have to construct class using external injector
+        //We have to construct class using external injector (but only when no parameters given)
         if (empty($parameters) && $this->hasInjector($reflection)) {
             //Creating class using injector/factory
             $instance = $this->getInjector($reflection)->createInjection(
