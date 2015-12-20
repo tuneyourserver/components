@@ -57,11 +57,11 @@ abstract class Component
      */
     protected function container()
     {
-        if ($this->container instanceof ContainerInterface) {
+        if (!empty($this->container) && $this->container instanceof ContainerInterface) {
             return $this->container;
         }
 
-        return self::$staticContainer;
+        return $this->container = self::$staticContainer;
     }
 
     /**

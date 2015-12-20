@@ -44,7 +44,8 @@ trait BenchmarkTrait
     {
         if (empty($this->benchmarker)) {
             if (
-                empty($container = $this->container()) || !$container->has(BenchmarkerInterface::class)
+                empty($container = $this->container())
+                || !$container->has(BenchmarkerInterface::class)
             ) {
                 //Nothing to do
                 return false;

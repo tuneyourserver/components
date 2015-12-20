@@ -452,7 +452,7 @@ class Container extends Component implements ContainerInterface, FactoryInterfac
         }
 
         if ($instance instanceof Component) {
-            $instance->setContainer($instance);
+            $instance->setContainer($this);
         }
 
         return $instance;

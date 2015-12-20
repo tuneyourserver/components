@@ -7,7 +7,6 @@
  */
 namespace Spiral\Database\Entities;
 
-use Interop\Container\ContainerInterface;
 use Spiral\Cache\StoreInterface;
 use Spiral\Core\Component;
 use Spiral\Core\Container\InjectableInterface;
@@ -121,33 +120,17 @@ class Database extends Component implements DatabaseInterface, InjectableInterfa
     private $prefix = '';
 
     /**
-     * Needed to receive cache store on demand.
-     *
-     * @invisible
-     * @var ContainerInterface
-     */
-    protected $container = null;
-
-    /**
-     * @param Driver             $driver           Driver instance responsible for database
+     * @param Driver $driver                       Driver instance responsible for database
      *                                             connection.
-     * @param string             $name             Internal database name/id.
-     * @param string             $prefix           Default database table prefix, will be used for
+     * @param string $name                         Internal database name/id.
+     * @param string $prefix                       Default database table prefix, will be used for
      *                                             all table identifiers.
-     * @param ContainerInterface $container        Needed to receive cache store on demand.
      */
-    public function __construct(
-        Driver $driver,
-        $name,
-        $prefix = '',
-        ContainerInterface $container = null
-    ) {
+    public function __construct(Driver $driver, $name, $prefix = '')
+    {
         $this->driver = $driver;
         $this->name = $name;
         $this->setPrefix($prefix);
-
-        //No saturation here as container is not mandratory
-        $this->container = $container;
     }
 
     /**
@@ -247,15 +230,9 @@ class Database extends Component implements DatabaseInterface, InjectableInterfa
         $key = '',
         StoreInterface $store = null
     ) {
-        if (empty($store) && empty($this->container)) {
-            throw new SugarException(
-                "Unable to receive cache 'StoreInterface', no container set of user store provided."
-            );
-        }
-
         if (empty($store)) {
-            //We can request store from container
-            $store = $this->container->get(StoreInterface::class);
+            //Cast or get cache store
+            $this->cacheStore();
         }
 
         if (empty($key)) {
@@ -418,5 +395,22 @@ class Database extends Component implements DatabaseInterface, InjectableInterfa
     public function __get($name)
     {
         return $this->table($name);
+    }
+
+    /**
+     * Get cache store.
+     *
+     * @todo add ability to set store for database
+     * @throws SugarException
+     */
+    protected function cacheStore()
+    {
+        if (empty($this->container())) {
+            throw new SugarException(
+                "Unable to receive cache 'StoreInterface', no container set of user store provided."
+            );
+        }
+
+        return $this->container()->get(StoreInterface::class);
     }
 }
