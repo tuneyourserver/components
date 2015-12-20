@@ -34,7 +34,7 @@ abstract class Component
      *
      * @param ContainerInterface $container Can be set to null.
      */
-    protected function setContainer(ContainerInterface $container = null)
+    public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
     }
