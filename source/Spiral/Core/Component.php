@@ -30,16 +30,6 @@ abstract class Component
     private static $staticContainer = null;
 
     /**
-     * Optional constructor.
-     *
-     * @param ContainerInterface $container
-     */
-    public function __construct(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
      * Get/set instance of instance specific container.
      *
      * @param ContainerInterface $container Can be set to null.
